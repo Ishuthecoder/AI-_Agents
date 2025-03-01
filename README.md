@@ -26,18 +26,25 @@ pip install -r requirements.txt
 3️⃣ Set Up Amazon Credentials
 
 Create an .env file in the project directory and add your Amazon login credentials:
+
 AMAZON_EMAIL=your-email@example.com
+
 AMAZON_PASSWORD=yourpassword
 
 4️⃣ Run the Application
+
 streamlit run app.py
 
 🔧 How It Works
 
 Logs into Amazon (handles authentication automatically).
+
 Navigates to Order History and selects the latest invoice.
+
 Downloads the invoice PDF and saves it to a Google Drive folder.
+
 Extracts text from the invoice using PyMuPDF.
+
 Displays extracted order details in the Streamlit UI.
 
 📂 Folder Structure
@@ -53,10 +60,15 @@ Displays extracted order details in the Streamlit UI.
 🎯 Example Output
 
 Downloaded Invoice Path: G:/My Drive/Amazon_Invoices/invoice.pdf
+
 Extracted Order Details (Example):
+
 Order ID: #123-4567890-1234567
+
 Item: Wireless Mouse
+
 Price: ₹1,499
+
 Date: February 20, 2025
 
 
