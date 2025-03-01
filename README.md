@@ -20,9 +20,11 @@ This AI-powered automation tool **logs into Amazon**, navigates to order history
 ---
 
 2️⃣ Install Required Dependencies
+
 pip install -r requirements.txt
 
 3️⃣ Set Up Amazon Credentials
+
 Create an .env file in the project directory and add your Amazon login credentials:
 AMAZON_EMAIL=your-email@example.com
 AMAZON_PASSWORD=yourpassword
@@ -31,6 +33,7 @@ AMAZON_PASSWORD=yourpassword
 streamlit run app.py
 
 🔧 How It Works
+
 Logs into Amazon (handles authentication automatically).
 Navigates to Order History and selects the latest invoice.
 Downloads the invoice PDF and saves it to a Google Drive folder.
@@ -38,7 +41,9 @@ Extracts text from the invoice using PyMuPDF.
 Displays extracted order details in the Streamlit UI.
 
 📂 Folder Structure
+
 📁 amazon-invoice-extractor
+
  ├── 📜 app.py             # Main script for automation & UI  
  ├── 📜 requirements.txt   # Dependencies  
  ├── 📂 GDrive-Invoices/   # Folder where invoices are saved  
@@ -46,6 +51,7 @@ Displays extracted order details in the Streamlit UI.
  ├── 📜 README.md          # Project documentation  
 
 🎯 Example Output
+
 Downloaded Invoice Path: G:/My Drive/Amazon_Invoices/invoice.pdf
 Extracted Order Details (Example):
 Order ID: #123-4567890-1234567
