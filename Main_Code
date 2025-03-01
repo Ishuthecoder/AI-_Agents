@@ -1,0 +1,132 @@
+# ✅ Streamlit App UI
+st.title("📄 Amazon Invoice Extractor")
+st.write("This app logs into Amazon, downloads the latest invoice as a PDF, and extracts order details.")
+
+# ✅ Set Amazon credentials
+EMAIL = os.getenv("AMAZON_EMAIL")
+PASSWORD = os.getenv("AMAZON_PASSWORD")
+
+# ✅ Set Google Drive folder path
+GOOGLE_DRIVE_FOLDER = "G:/My Drive/Amazon_Invoices"
+
+# Ensure folder exists
+if not os.path.exists(GOOGLE_DRIVE_FOLDER):
+    os.makedirs(GOOGLE_DRIVE_FOLDER)
+
+if not EMAIL or not PASSWORD:
+    st.error("❌ Please set AMAZON_EMAIL and AMAZON_PASSWORD environment variables!")
+    st.stop()
+
+# ✅ Start undetected ChromeDriver
+options = uc.ChromeOptions()
+options.headless = False  # Run in visible mode
+options.add_argument('--kiosk-printing')  # Auto print without pop-up
+options.add_experimental_option("prefs", {
+    "savefile.default_directory": GOOGLE_DRIVE_FOLDER,  # Save in Google Drive
+    "printing.print_preview_sticky_settings.appState": '{"recentDestinations":[{"id":"Save as PDF","origin":"local"}],"selectedDestinationId":"Save as PDF","version":2}',
+    "printing.default_destination_selection_rules": {
+        "kind": "local",
+        "namePattern": "Save as PDF"
+    }
+})
+driver = uc.Chrome(options=options)
+
+try:
+    st.info("🔄 Navigating to Amazon Orders Page...")
+    orders_url = "https://www.amazon.in/your-orders/orders?timeFilter=year-2023&ref_=ppx_yo2ov_dt_b_filter_all_y2023"
+    driver.get(orders_url)
+    time.sleep(5)
+
+    # Step 1️⃣: Handle Login (if required)
+    if "signin" in driver.current_url:
+        st.warning("🔒 Amazon login required. Logging in...")
+
+        email_field = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "ap_email"))
+        )
+        email_field.send_keys(EMAIL)
+        driver.find_element(By.ID, "continue").click()
+
+        time.sleep(2)
+
+        password_field = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "ap_password"))
+        )
+        password_field.send_keys(PASSWORD)
+        driver.find_element(By.ID, "signInSubmit").click()
+
+        time.sleep(5)
+        st.success("✅ Successfully logged in!")
+
+    # Step 2️⃣: Click on the first order
+    first_order = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//*[@id='a-page']/section/div/li[1]/div/div/div[2]/div/div/div/div[1]/div[1]/div/h3/span"))
+    )
+    first_order.click()
+    time.sleep(3)
+
+    # Step 3️⃣: Click on the Invoice link
+    invoice_link_element = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, "//*[@id='a-page']/section/div/li[1]/div/div/div[1]/div/div/div/h5/div[2]/div[2]/div/ul/li[2]/span/a"))
+    )
+    invoice_link_element.click()
+    time.sleep(5)
+
+    # Step 4️⃣: Click on "Printable Order Summary"
+    printable_summary_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//*[@id='a-popover-content-1']/ul/li/span/a"))
+    )
+    printable_summary_button.click()
+    time.sleep(5)
+
+    # Step 5️⃣: Print the page as PDF
+    driver.execute_script("window.print();")
+    time.sleep(5)
+
+    st.success(f"✅ Invoice saved to Google Drive folder: {GOOGLE_DRIVE_FOLDER}")
+
+    # Step 6️⃣: Find the latest downloaded PDF file
+    def get_latest_pdf(folder):
+        pdf_files = [f for f in os.listdir(folder) if f.endswith(".pdf")]
+        if not pdf_files:
+            return None
+        latest_pdf = max(pdf_files, key=lambda x: os.path.getctime(os.path.join(folder, x)))
+        return os.path.join(folder, latest_pdf)
+
+    invoice_pdf_path = get_latest_pdf(GOOGLE_DRIVE_FOLDER)
+    
+    if invoice_pdf_path:
+        st.info("📂 Extracting order details from the PDF...")
+
+        # Step 7️⃣: Extract text from the PDF
+        with fitz.open(invoice_pdf_path) as doc:
+            extracted_text = "\n".join([page.get_text("text") for page in doc])
+
+        # Display extracted order details in Streamlit
+        if extracted_text:
+            st.subheader("📑 Extracted Order Details")
+            st.text_area("Extracted Order Summary", extracted_text, height=300)
+        else:
+            st.warning("⚠ No text found in the invoice PDF!")
+
+    else:
+        st.error("❌ No invoice PDF found in the specified folder!")
+
+except Exception as e:
+    st.error(f"❌ Error: {e}")
+
+finally:
+    time.sleep(5)
+    if driver:
+        driver.quit()
+        driver = None
+    st.success("✅ Driver closed successfully!")
+
+
+
+
+
+
+
+
+
