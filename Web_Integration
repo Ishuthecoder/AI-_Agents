@@ -1,0 +1,3 @@
+# ✅ Streamlit App UI
+st.title("📄 Amazon Invoice Extractor")
+st.write("This app logs into Amazon, downloads the latest invoice as a PDF, and extracts order details.")
